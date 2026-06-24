@@ -10,7 +10,7 @@ An Android app that embeds [Syncthing](https://syncthing.net) as a foreground se
 
 - **Embedded Syncthing binary** — runs the official Syncthing binary as a foreground service directly on the device; no separate daemon or root required
 - **Folder management** — add and delete sync folders; browse the filesystem with the system folder picker (supports paths accessible by other apps such as Obsidian)
-- **Device pairing** — add remote devices by Device ID with format validation
+- **Device pairing** — add remote devices by scanning a QR code or entering the Device ID manually
 - **Pending request cards** — devices or folders offered by remote peers appear as one-tap approval cards on the home screen
 - **Real-time status** — sync progress bar, bytes synced, online/offline badge per device; refreshes every 5 seconds
 - **Adaptive icon** — Syncthing's official logo, all mipmap densities
@@ -32,7 +32,7 @@ app/
 │   ├── MainViewModel.kt         # UiState + StateFlow, 5 s polling
 │   ├── HomeScreen.kt            # Main screen (LazyColumn)
 │   ├── AddFolderDialog.kt       # AlertDialog with folder picker
-│   └── AddDeviceDialog.kt       # AlertDialog with ID validation
+│   └── AddDeviceDialog.kt       # AlertDialog with QR scanner + ID validation
 └── MainActivity.kt              # Permission handling, service lifecycle
 ```
 
@@ -53,7 +53,7 @@ app/
 |---|---|
 | **Android** | 9.0 (API 28) or later |
 | **Architecture** | arm64-v8a, armeabi-v7a, x86_64 |
-| **Permissions** | `INTERNET`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`, `POST_NOTIFICATIONS`, `MANAGE_EXTERNAL_STORAGE` (optional, for browsing arbitrary folders) |
+| **Permissions** | `INTERNET`, `FOREGROUND_SERVICE`, `FOREGROUND_SERVICE_DATA_SYNC`, `POST_NOTIFICATIONS`, `CAMERA` (QR scanner), `MANAGE_EXTERNAL_STORAGE` (optional, for browsing arbitrary folders) |
 
 ---
 
@@ -108,6 +108,22 @@ Repeat for `armeabi-v7a` (`GOARCH=arm`, `GOARM=7`) and `x86_64` (`GOARCH=amd64`)
 
 ---
 
+## Pairing a device
+
+The easiest way to pair two Syncthing devices is with the QR code:
+
+1. On the **remote device** (desktop or another phone), open the Syncthing Web UI and go to **Actions → Show ID**. A QR code of the Device ID is displayed.
+2. On this app, tap the **`+`** button next to "裝置".
+3. Tap **掃描 QR Code** — the camera opens.
+4. Point the camera at the QR code. The Device ID fills in automatically once scanned.
+5. Optionally enter a friendly name, then tap **新增**.
+
+If the remote device does not have a QR code readily available, you can also type or paste the 63-character Device ID manually into the text field.
+
+> **Tip:** Syncthing pairing is mutual. After adding the remote device here, the remote side must also add this device's ID (shown in the **服務狀態** card on the home screen).
+
+---
+
 ## Syncing with Obsidian
 
 To sync an Obsidian vault:
@@ -129,6 +145,7 @@ To sync an Obsidian vault:
 | HTTP | Retrofit 2.11 + OkHttp 4.12 |
 | JSON | Gson |
 | Concurrency | Kotlin Coroutines 1.9 |
+| QR scanner | ZXing Android Embedded 4.3.0 |
 | Build | AGP 9.2, Kotlin 2.2, Gradle 8 |
 
 ---
